@@ -13,17 +13,6 @@ namespace WpfApplication1
 
         methods metod = new methods();
 
-        /*
-        List<double> Xi_tab1 = new List<double>() { 0.134, 0.561, 1.341, 2.291, 6.913 };
-        List<double> Yi_tab1 = new List<double>() { 2.156, 3.348, 3.611, 4.112, 4.171 };
-
-        readonly List<double> Xi_tab1 = new List<double>() { 0.351, 0.867, 3.315, 5.013, 6.432 };
-        readonly List<double> Yi_tab1 = new List<double>() { -0.572, -2.015, -3.342, -5.752, -6.911 };
-
-        List<double> Xi_tab3 = new List<double>() { 0.015, 0.347, 0.679, 1.011, 1.343, 1.675, 2.007, 2.339, 2.671 };
-        List<double> Yi_tab3 = new List<double>() { -2.417, -2.215, -1.821, -1.209, -0.640, 0.004, 0.772, 1.383, 1.815 };
-        */
-
         List<double> Xi = new List<double>(); //точки
         List<double> Yi = new List<double>();
 
@@ -34,17 +23,13 @@ namespace WpfApplication1
         List<List<double>> znachenia = new List<List<double>>(m);
 
         readonly static double a = 17, b = 4, k = 1;
-        readonly static int c = 4, d = 20, m = 6, n = 4;
+        readonly static int c = 4, d = 20, m = 16, n = 4;
 
         public string some_pice_of_shit;
-        public IList<DataPoint> Points1 { get; private set; }
-        public IList<DataPoint> Points2 { get; private set; }
-        public IList<DataPoint> Points3 { get; private set; }
-        public IList<DataPoint> Points4 { get; private set; }
-        public IList<DataPoint> Points5 { get; private set; }
-        public IList<DataPoint> Points6 { get; private set; }
-        public IList<DataPoint> Points7 { get; private set; }
-        public IList<DataPoint> Points8 { get; private set; }
+        public IList<DataPoint> Points1 { get; private set; }        public IList<DataPoint> Points2 { get; private set; }
+        public IList<DataPoint> Points3 { get; private set; }        public IList<DataPoint> Points4 { get; private set; }
+        public IList<DataPoint> Points5 { get; private set; }        public IList<DataPoint> Points6 { get; private set; }
+        public IList<DataPoint> Points7 { get; private set; }        public IList<DataPoint> Points8 { get; private set; }
 
         public static double Y3(double x)
         {
@@ -68,7 +53,7 @@ namespace WpfApplication1
 
             metod.log += "Производные исходной функции:\n";
 
-            for (int i = 0; i < m; i++)  //бьём отрезки между точками на n отрезков
+            for (int i = 0; i < m; i++)  //бьём отрезки между точками на m отрезков
             {
                 tochki.Add(new List<double>());
                 znachenia.Add(new List<double>());
@@ -78,15 +63,24 @@ namespace WpfApplication1
                     tochki[i].Add(x);
                     znachenia[i].Add(Y3(x));
                     if (j != 0 && j < n) //если это не крайние точки, то ищем их производные
-                        Push_der(x);
+                    {
+                        metod.log += Get_der_1(x).ToString("F4");
+                        metod.log += "\t   ";
+                        metod.log += Get_der_2(x).ToString("F4");
+                        metod.log += "\n";
+                    }
                 }
             }
 
-            void Push_der(double x) //находим производные для функции
+            double Get_der_1(double x) //находим производные для функции
             {
                 double der = (Y3(x + 0.0000001) - Y3(x - 0.0000001)) / 0.0000002;
-                metod.log += der.ToString("F4");
-                metod.log += "\n";
+                return der;
+            }
+            double Get_der_2(double x)
+            {
+                double der = (Get_der_1(x + 0.0000001) - Get_der_1(x - 0.0000001)) / 0.0000002;
+                return der;
             }
 
             metod.log += "\nПроизводные многочлена:\n";
@@ -177,10 +171,47 @@ namespace WpfApplication1
                     znachenia[i].Add(Y3(x));
                 }
             }
-            metod.log += "Значение интеграла методом Ньютона-Котеса:\n";
+
+            double step = 0.000001;
+
+            metod.log += "Значение интеграла методом Ньютона-Котеса n = 3:\n";
+            metod.log += "Число точек: "; metod.log += (m * 3).ToString(); metod.log += "\n";
             metod.Newton_Cotes_3(Xi, Yi);
-            metod.log += "\nЗначение интеграла методом прямоугольников:\n";
-            metod.typoe(Xi, Yi, c, d);
+            metod.log += "\nЗначение интеграла методом Ньютона-Котеса n = 6:\n";
+            metod.log += "Число точек: "; metod.log += (m * 6).ToString(); metod.log += "\n";
+            metod.Newton_Cotes_6(Xi, Yi);
+            metod.log += "\nЗначение интеграла методом левых прямоугольников:\n";
+            metod.log += "Число точек: "; metod.log += Math.Round((d - c)/ step).ToString(); metod.log += "\n";
+            metod.Left_square(c, d, step);
+            metod.log += "\nЗначение интеграла методом правых прямоугольников:\n";
+            metod.log += "Число точек: "; metod.log += Math.Round((d - c) / step).ToString(); metod.log += "\n";
+            metod.Right_square(c, d, step);
+            metod.log += "\nЗначение интеграла методом центральных прямоугольников:\n";
+            metod.log += "Число точек: "; metod.log += Math.Round((d - c) / step).ToString(); metod.log += "\n";
+            metod.Center_square(c, d, step);
+            metod.log += "\nЗначение интеграла методом трапеций:\n";
+            metod.log += "Число точек: "; metod.log += Math.Round((d - c) / step).ToString(); metod.log += "\n";
+            metod.Trapecia(c, d, step);
+            metod.log += "\nЗначение интеграла методом Симпсона:\n";
+            metod.log += "Число точек: "; metod.log += ((m + 1) * 2).ToString(); metod.log += "\n";
+            metod.Simpson(Xi, Yi);
+
+            List<double> Xi2 = new List<double>(); //еще точки
+            List<double> Yi2 = new List<double>();
+
+            int count = 24;
+            for (int i = 0; i <= count; i++) //добавляем
+            {
+                Xi2.Add(c + (d - c) * (double)i / count);
+                Yi2.Add(Y3(Xi2[i]));
+            }
+
+            metod.log += "Значение интеграла методом Ньютона-Котеса n = 3 в моем переосмыслении:\n";
+            metod.log += "Число точек: "; metod.log += (count + 1).ToString(); metod.log += "\n";
+            metod.Newton_Cotes_3_My(Xi2, Yi2);
+            metod.log += "Значение интеграла методом Ньютона-Котеса n = 6 в моем переосмыслении:\n";
+            metod.log += "Число точек: "; metod.log += (count + 1).ToString(); metod.log += "\n";
+            metod.Newton_Cotes_6_My(Xi2, Yi2);
 
             Points1 = metod.tab(Points1, Xi, Yi);
             Points2 = metod.tab(Points2, Xiline, Yiline);
@@ -190,60 +221,11 @@ namespace WpfApplication1
             Points6 = metod.Lagrange(Points6, tochki[3], znachenia[3], Xi[3], Xi[4], false);
             Points7 = metod.Lagrange(Points7, tochki[4], znachenia[4], Xi[4], Xi[5], false);
             Points8 = metod.Lagrange(Points8, tochki[5], znachenia[5], Xi[5], Xi[6], false);
+
         }
-        /*
-        void ex1_2()
-        {
-            Points1 = metod.tab(Points1, Xi_tab1, Yi_tab1);
-            Points2 = metod.Lagrange(Points2, Xi_tab1, Yi_tab1, 0, 7);
-            Points3 = metod.Newton(Points3, Xi_tab1, Yi_tab1, 0, 7);
-        }
-        void ex4()
-        {
-            for (int i = 0; i <= m * n; i++) //добавляем точки
-            {
-                Xi.Add(c + (d - c) * (double)i / (m * n));
-                Yi.Add(Y3(Xi[i]));
-            }
-            for (double i = 0; i <= m; i += 0.05) //добавляем график
-            {
-                double x = c + (d - c) * (double)i / m;
-                Xiline.Add(x);
-                Yiline.Add(Y3(x));
-            }
-            Points1 = metod.tab(Points1, Xi, Yi);
-            Points2 = metod.tab(Points2, Xiline, Yiline);
-            Points3 = metod.Line_spline(Points3, Xi, Yi);
-        }
-        void ex5()
-        {
-            for (int i = 0; i <= m * n; i++) //добавляем точки
-            {
-                Xi.Add(c + (d - c) * (double)i / (m * n));
-                Yi.Add(Y3(Xi[i]));
-            }
-            for (double i = 0; i <= m; i += 0.05) //добавляем график
-            {
-                double x = c + (d - c) * (double)i / m;
-                Xiline.Add(x);
-                Yiline.Add(Y3(x));
-            }
-            Points1 = metod.tab(Points1, Xi, Yi);
-            Points2 = metod.tab(Points2, Xiline, Yiline);
-            Points3 = metod.Cube_spline(Points3, Xi, Yi);
-        }
-        void ex6()
-        {
-            int n = Yi_tab3.Count;
-            for (int i = 0; i < n; i++) //добавляем точки
-            {
-                Yi_tab3[i] += 3;
-            }
-            Points1 = metod.tab(Points1, Xi_tab3, Yi_tab3);
-            Points3 = metod.Line_approx(Points3, Xi_tab3, Yi_tab3);
-            Points4 = metod.Exp_approx(Points4, Xi_tab3, Yi_tab3);
-        }
-        */
+        
+       
+
         public Main()
         {
             if (exercise == 1)
@@ -254,6 +236,7 @@ namespace WpfApplication1
 
             if (exercise == 3)
                 ex3();
+
             /*
             if (exercise == 4)
                 ex4();

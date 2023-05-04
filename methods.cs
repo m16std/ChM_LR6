@@ -60,11 +60,24 @@ namespace WpfApplication1
             if (is_der)
                 for (int i = 1; i < n - 1; i++)  //находим производные для многочлена
                 {
-                    double der = (Get_Lagrange(x[i] + 0.0000001, x, y, n) - Get_Lagrange(x[i] - 0.0000001, x, y, n)) / 0.0000002;
-                    add_text_to_log(der.ToString("F4"), 1);
+                    log += Get_der_1(x[i]).ToString("F4");
+                    add_text_to_log("\t   ",0);
+                    add_text_to_log(Get_der_2(x[i]).ToString("F4"), 1);
                 }
 
+            double Get_der_1(double xi)
+            {
+                double der = (Get_Lagrange(xi + 0.0000001, x, y, n) - Get_Lagrange(xi - 0.0000001, x, y, n)) / 0.0000002;
+                return der;
+            }
+            double Get_der_2(double xi)
+            {
+                double der = (Get_der_1(xi + 0.0000001) - Get_der_1(xi - 0.0000001)) / 0.0000002;
+                return der;
+            }
+
             return Points;
+
         }
         private double Get_Newton(double x, List<double> MasX, List<double> MasY, int n)
         {
@@ -117,6 +130,50 @@ namespace WpfApplication1
             return Points;
         }
 
+        public double Newton_Cotes_3_My(List<double> x, List<double> y)
+        {
+            int n = 4;
+            int count = x.Count;
+            double h = (x[1] - x[0]) / 3;
+            double S = 0, xi;
+            List<double> c = new List<double>() { 1, 3, 3, 1 };
+
+            for (int i = 0; i < count - 1; i++)
+            {
+                for (int k = 0; k < n; k++)
+                {
+                    xi = x[i] + h * k;
+                    S += c[k] * Get_Lagrange(xi, x, y, count);
+                }
+            }
+            S *= (x[1] - x[0]) / 8;
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 2);
+            return S;
+
+        }
+        public double Newton_Cotes_6_My(List<double> x, List<double> y)
+        {
+            int n = 7;
+            int count = x.Count;
+            double h = (x[1] - x[0]) / 6;
+            double S = 0, xi;
+            List<double> c = new List<double>() { 41, 216, 27, 272, 27, 216, 41 };
+
+            for (int i = 0; i < count - 1; i++)
+            {
+
+                for (int k = 0; k < n; k++)
+                {
+                    xi = x[i] + h * k;
+                    S += c[k] * Get_Lagrange(xi, x, y, count);
+                }
+            }
+            S *= (x[1] - x[0]) / 840;
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 1);
+            return S;
+        }
         public double Newton_Cotes_3(List<double> x, List<double> y)
         {
             int n = 4;
@@ -124,46 +181,118 @@ namespace WpfApplication1
             double h = (x[1] - x[0]) / 3;
             double S = 0, xi;
             List<double> c = new List<double>() { 1, 3, 3, 1 };
-            List<double> tochki = new List<double>() { 0, 0, 0, 0 };
-            List<double> znachenia = new List<double>() { 0, 0, 0, 0 };
+
             for (int i = 0; i < count - 1; i++)
             {
-                for (int u = 0; u < n; u++)
-                {
-                    xi = x[i] + h * (double)u;
-                    tochki[u] = xi;
-                    znachenia[u] = Main.Y3(xi); //точки внутри отрезков
-                }
 
                 for (int k = 0; k < n; k++)
                 {
                     xi = x[i] + h * k;
-                    S += c[k] * Get_Lagrange(xi, tochki, znachenia, n);
+                    S += c[k] * Main.Y3(xi);
                 }
-
             }
             S *= (x[1] - x[0]) / 8;
             add_text_to_log("I = ", 0);
-            add_text_to_log(S.ToString("F4"), 1);
+            add_text_to_log(S.ToString("F5"), 1);
             return S;
-
         }
-        public double typoe(List<double> x, List<double> y, double a, double b)
+        public double Newton_Cotes_6(List<double> x, List<double> y)
+        {
+            int n = 7;
+            int count = x.Count;
+            double h = (x[1] - x[0]) / 6;
+            double S = 0, xi;
+            List<double> c = new List<double>() { 41, 216, 27, 272, 27, 216, 41 };
+
+            for (int i = 0; i < count - 1; i++)
+            {
+
+                for (int k = 0; k < n; k++)
+                {
+                    xi = x[i] + h * k;
+                    S += c[k] * Main.Y3(xi);
+                }
+            }
+            S *= (x[1] - x[0]) / 840;
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 1);
+            return S;
+        }
+        public double Left_square(double a, double b, double step)
         {
             double S = 0;
 
-            for (double i = a; i < b; i += 0.01)
+            for (double i = a; i < b; i += step)
             {
-
-                S += Main.Y3(i) * 0.01;
+                S += Main.Y3(i) * step;
             }
 
             add_text_to_log("I = ", 0);
-            add_text_to_log(S.ToString("F4"), 1);
+            add_text_to_log(S.ToString("F5"), 1);
             return S;
+        }
+        public double Right_square(double a, double b, double step)
+        {
+            double S = 0;
+            
+            for (double i = a + step; i < b + step / 2; i += step)
+            {
+                S += Main.Y3(i) * step;
+            }
 
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 1);
+            return S;
         }
 
+        public double Center_square(double a, double b, double step)
+        {
+            double S = 0;
+
+            for (double i = a + step / 2; i < b; i += step)
+            {
+                S += Main.Y3(i) * step;
+            }
+
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 1);
+            return S;
+        }
+        public double Trapecia(double a, double b, double step)
+        {
+            double S = 0;
+
+            for (double i = a; i < b; i += step)
+            {
+                S += (Main.Y3(i) + Main.Y3(i+ step)) / 2.0 * step;
+            }
+
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 1);
+            return S;
+        }
+        public double Simpson(List<double> x, List<double> y)
+        {
+            int n = 3;
+            int count = x.Count;
+            double h = (x[1] - x[0]) / 2;
+            double S = 0, xi;
+            List<double> c = new List<double>() { 1, 4, 1 };
+
+            for (int i = 0; i < count - 1; i++)
+            {
+
+                for (int k = 0; k < n; k++)
+                {
+                    xi = x[i] + h * k;
+                    S += c[k] * Main.Y3(xi);
+                }
+            }
+            S *= (x[1] - x[0]) / 6;
+            add_text_to_log("I = ", 0);
+            add_text_to_log(S.ToString("F5"), 4);
+            return S;
+        }
 
 
 
