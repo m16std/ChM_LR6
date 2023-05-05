@@ -9,7 +9,7 @@ namespace WpfApplication1
 
     public class Main
     {
-        int exercise = 3;
+        int exercise = 6;
 
         methods metod = new methods();
 
@@ -22,18 +22,34 @@ namespace WpfApplication1
         List<List<double>> tochki = new List<List<double>>(m); //точки внутри отрезков
         List<List<double>> znachenia = new List<List<double>>(m);
 
-        readonly static double a = 17, b = 4, k = 1;
-        readonly static int c = 4, d = 20, m = 16, n = 4;
-
         public string some_pice_of_shit;
         public IList<DataPoint> Points1 { get; private set; }        public IList<DataPoint> Points2 { get; private set; }
         public IList<DataPoint> Points3 { get; private set; }        public IList<DataPoint> Points4 { get; private set; }
         public IList<DataPoint> Points5 { get; private set; }        public IList<DataPoint> Points6 { get; private set; }
         public IList<DataPoint> Points7 { get; private set; }        public IList<DataPoint> Points8 { get; private set; }
 
+        readonly static double a = 17, b = 4, k = 1;
+        readonly static int c = 4, d = 20, m = 16, n = 4;
+
         public static double Y3(double x)
         {
             return Math.Pow(Math.Log(x), a / b) * Math.Sin(k * x);
+        }
+        public static double dY5(double x, double y)
+        {
+            return Math.Pow(-1, c) * (b+k/10)*y + (a+(double)d/100)*Math.Pow(x,2)+((double)m + (double)n /10);
+        }
+        public static double dY5_solved(double x)
+        {
+            return (379005 * Math.Exp(4.1 * x) - 4 * (72283 * Math.Pow(x, 2) + 35260 * x + 77521)) / 68921;
+        }
+        public static double dY6(double x, double y)
+        {
+            return (2 * Math.Pow(y, 2) * Math.Log(x) - y) / x;
+        }
+        public static double dY6_solved(double x)
+        {
+            return 1/(2.0*(Math.Log(x)+1));
         }
 
         void ex1()
@@ -223,10 +239,31 @@ namespace WpfApplication1
             Points8 = metod.Lagrange(Points8, tochki[5], znachenia[5], Xi[5], Xi[6], false);
 
         }
-        
-       
 
-        public Main()
+        void ex5()
+        {
+            double step = 0.001, x0 = 0, y0 = 1, xn = 1;
+            Points2 = metod.Dif_Real(Points2, dY5_solved, y0, x0, xn);
+            Points3 = metod.Dif_Euler(Points3, dY5, dY5_solved, y0, x0, xn, step);
+            Points4 = metod.Dif_Euler_Modify(Points4, dY5, dY5_solved, y0, x0, xn, step);
+            Points5 = metod.Dif_Runge_Kutta_4(Points5, dY5, dY5_solved, y0, x0, xn, step);
+            Points6 = metod.Dif_Runge_Kutta_5(Points6, dY5, dY5_solved, y0, x0, xn, step);
+            Points7 = metod.Dif_Adams_Bashford_4(Points6, dY5, dY5_solved, y0, x0, xn, step);
+            Points8 = metod.Dif_Adams_Moulton_4(Points8, dY5, dY5_solved, y0, x0, xn, step);
+        }
+        void ex6()
+        {
+            double step = 0.05, x0 = 1, y0 = 0.5, xn = 5;
+            Points2 = metod.Dif_Real(Points2, dY6_solved, y0, x0, xn);
+            Points3 = metod.Dif_Euler(Points3, dY6, dY6_solved, y0, x0, xn, step);
+            Points4 = metod.Dif_Euler_Modify(Points4, dY6, dY6_solved, y0, x0, xn, step);
+            Points5 = metod.Dif_Runge_Kutta_4(Points5, dY6, dY6_solved, y0, x0, xn, step);
+            Points6 = metod.Dif_Runge_Kutta_5(Points6, dY6, dY6_solved, y0, x0, xn, step);
+            Points7 = metod.Dif_Adams_Bashford_4(Points6, dY6, dY6_solved, y0, x0, xn, step);
+            Points8 = metod.Dif_Adams_Moulton_4(Points8, dY6, dY6_solved, y0, x0, xn, step);
+        }
+
+            public Main()
         {
             if (exercise == 1)
                 ex1();
@@ -237,16 +274,12 @@ namespace WpfApplication1
             if (exercise == 3)
                 ex3();
 
-            /*
-            if (exercise == 4)
-                ex4();
-
             if (exercise == 5)
                 ex5();
 
             if (exercise == 6)
                 ex6();
-            */
+
             some_pice_of_shit += metod.log;
         }
 

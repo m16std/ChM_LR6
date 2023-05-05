@@ -61,7 +61,7 @@ namespace WpfApplication1
                 for (int i = 1; i < n - 1; i++)  //находим производные для многочлена
                 {
                     log += Get_der_1(x[i]).ToString("F4");
-                    add_text_to_log("\t   ",0);
+                    add_text_to_log("\t   ", 0);
                     add_text_to_log(Get_der_2(x[i]).ToString("F4"), 1);
                 }
 
@@ -234,7 +234,7 @@ namespace WpfApplication1
         public double Right_square(double a, double b, double step)
         {
             double S = 0;
-            
+
             for (double i = a + step; i < b + step / 2; i += step)
             {
                 S += Main.Y3(i) * step;
@@ -264,7 +264,7 @@ namespace WpfApplication1
 
             for (double i = a; i < b; i += step)
             {
-                S += (Main.Y3(i) + Main.Y3(i+ step)) / 2.0 * step;
+                S += (Main.Y3(i) + Main.Y3(i + step)) / 2.0 * step;
             }
 
             add_text_to_log("I = ", 0);
@@ -301,205 +301,188 @@ namespace WpfApplication1
 
 
 
-
-
-
-
-
-
-        public IList<DataPoint> Line_spline(IList<DataPoint> Points, List<double> x, List<double> y)
+        string tochnost = "F10";
+        public IList<DataPoint> Dif_Real(IList<DataPoint> Points, Func<double, double> dY_solved, double y0, double x0, double xn)
         {
-            add_text_to_log("Линейный сплайн", 1);
-            int n = x.Count;
-            double xi;
+            double xi, step = 0.01;
             Points = new List<DataPoint>();
-            for (int i = 0; i < n - 1; ++i) //проход по всем точкам
+            for (xi = x0; xi <= xn + step / 2; xi += step)
             {
-                for (xi = x[i]; xi < x[i + 1]; xi += 0.05) //проход по отрезку между точкой и следующей
-                {
-                    Points.Add(new DataPoint(xi, y[i] + (y[i + 1] - y[i]) / (x[i + 1] - x[i]) * (xi - x[i])));
-                }
-
-                double coef = (y[i + 1] - y[i]) / (x[i + 1] - x[i]);
-                add_text_to_log(coef.ToString("F3"), 1);
+                Points.Add(new DataPoint(xi, dY_solved(xi)));
             }
-            add_text_to_log("", 1);
-            return Points;
-        }
-
-        public class spline
-        {
-            public double b, c, d, x, y;
-        };
-        List<spline> splines;
-        public void Build_spline(List<double> x, List<double> y)
-        {
-            int n = x.Count;
-
-            splines = new List<spline>(n);
-
-            for (int i = 0; i < n; ++i)
-            {
-                splines.Add(new spline());
-                splines[i].x = x[i];
-                splines[i].y = y[i];
-            }
-
-            splines[0].c = 0;
-
-            // Решение СЛАУ относительно коэффициентов сплайнов c[i] методом прогонки для трехдиагональных матриц
-            // Вычисление прогоночных коэффициентов - прямой ход метода прогонки
-
-            List<double> alpha = new List<double>(n);
-            List<double> beta = new List<double>(n);
-            for (int i = 1; i < n; i++)
-            {
-                alpha.Add(0);
-                beta.Add(0);
-            }
-            double A = 0, B, C = 0, F = 0, h_i, h_i1, z;
-
-            for (int i = 1; i < n - 1; i++)
-            {
-                h_i = x[i] - x[i - 1];
-                h_i1 = x[i + 1] - x[i];
-                A = h_i;
-                C = 2 * (h_i + h_i1);
-                B = h_i1;
-                F = 6 * ((y[i + 1] - y[i]) / h_i1 - (y[i] - y[i - 1]) / h_i);
-                z = (A * alpha[i - 1] + C);
-                alpha[i] = -B / z;
-                beta[i] = (F - A * beta[i - 1]) / z;
-            }
-
-            splines[n - 1].c = (F - A * beta[n - 2]) / (C + A * alpha[n - 2]);
-
-            // Нахождение решения - обратный ход метода прогонки
-            for (int i = n - 2; i > 0; i--)
-                splines[i].c = alpha[i] * splines[i + 1].c + beta[i];
-
-
-            // По известным коэффициентам c[i] находим значения b[i] и d[i]
-            for (int i = n - 1; i > 0; i--)
-            {
-                h_i = x[i] - x[i - 1];
-                splines[i].d = (splines[i].c - splines[i - 1].c) / h_i;
-                splines[i].b = h_i * (2 * splines[i].c + splines[i - 1].c) / 6 + (y[i] - y[i - 1]) / h_i;
-            }
-
-        }
-        public IList<DataPoint> Cube_spline(IList<DataPoint> Points, List<double> x, List<double> y)
-        {
-            add_text_to_log("Кубический сплайн", 1);
-            Points = new List<DataPoint>();
-            Build_spline(x, y);
-            int n = x.Count;
-            add_text_to_log("Коэффициенты b, c, d:", 1);
-            for (int i = 1; i < n; i++)
-            {
-                add_text_to_log(splines[i].b.ToString("F3"), 0);
-                add_text_to_log(splines[i].c.ToString("F3"), 0);
-                add_text_to_log(splines[i].d.ToString("F3"), 1);
-            }
-
-            spline s = new spline();
-            for (double xi = x[0]; xi <= x[n - 1]; xi += 0.05)
-            {
-                int i = 0, j = n - 1;
-                while (i + 1 < j) //поиск сплана
-                {
-                    int k = i + (j - i) / 2;
-                    if (xi <= splines[k].x)
-                        j = k;
-                    else
-                        i = k;
-                }
-
-                s = splines[j];
-
-                double dx = (xi - s.x);
-                Points.Add(new DataPoint(xi, s.y + (s.b + (s.c / 2 + s.d * dx / 6) * dx) * dx)); //получаем точку
-            }
-            return Points;
-        }
-        public IList<DataPoint> Line_approx(IList<DataPoint> Points, List<double> x, List<double> y)
-        {
-            add_text_to_log("Линейная апроксимация", 1);
-            int n = x.Count;
-            double xi;
-            Points = new List<DataPoint>();
-            double sumx = 0, sumy = 0, sumx2 = 0, sumxy = 0, a, b;
-            for (int i = 0; i < n; i++)
-            {
-                sumx += x[i];
-                sumy += y[i];
-                sumx2 += x[i] * x[i];
-                sumxy += x[i] * y[i];
-            }
-            b = (n * sumxy - (sumx * sumy)) / (n * sumx2 - sumx * sumx);
-            a = (sumy - b * sumx) / n;
-
-            add_text_to_log("Коэффициенты a, b:", 1);
-            add_text_to_log(a.ToString("F3"), 0);
-            add_text_to_log(b.ToString("F3"), 1);
-
-            for (xi = x[0]; xi < x[n - 1]; xi += 0.05)
-            {
-                Points.Add(new DataPoint(xi, a + b * xi));
-            }
-            double summa = 0, oshibka, delta;
-            for (int i = 0; i < n; i++)
-            {
-                delta = y[i] - a - b * x[i];
-                summa += Math.Pow(delta, 2);
-            }
-            oshibka = (summa / (n + 1));
-            add_text_to_log("Ошибка:", 1);
-            add_text_to_log(oshibka.ToString("F3"), 1);
-            add_text_to_log("", 1);
 
             return Points;
         }
-        public IList<DataPoint> Exp_approx(IList<DataPoint> Points, List<double> x, List<double> y)
+        public IList<DataPoint> Dif_Euler(IList<DataPoint> Points, Func<double, double, double> dY, Func<double, double> dY_solved, double y0, double x0, double xn, double step)
         {
-            add_text_to_log("Апроксимация функцией e^(a+bx)", 1);
-            int n = x.Count;
-            double xi;
+            double xi, yi = y0, delta = 0;
             Points = new List<DataPoint>();
-            double sumx = 0, sumy = 0, sumx2 = 0, sumxy = 0, a, b;
-            for (int i = 0; i < n; i++)
+            for (xi = x0; xi <= xn + step / 2; xi += step)
             {
-                if (y[i] > 0) //патамушта аппроксимирующая функция положительная
+                delta += Math.Abs(yi - dY_solved(xi));
+                Points.Add(new DataPoint(xi, yi));
+                yi += dY(xi, yi) * step;
+            }
+            delta /= (xn - x0) / step;
+            add_text_to_log("Метод Эйлера\nСреднее отклонение: ", 0);
+            add_text_to_log(delta.ToString(tochnost), 2);
+            return Points;
+        }
+        public IList<DataPoint> Dif_Euler_Modify(IList<DataPoint> Points, Func<double, double, double> dY, Func<double, double> dY_solved, double y0, double x0, double xn, double step)
+        {
+            double xi, yi = y0, delta = 0;
+            Points = new List<DataPoint>();
+            for (xi = x0; xi <= xn + step / 2; xi += step)
+            {
+                delta += Math.Abs(yi - dY_solved(xi));
+                Points.Add(new DataPoint(xi, yi));
+                yi += dY(xi + step / 2, yi + dY(xi, yi) * step / 2) * step;
+            }
+            delta /= (xn - x0) / step;
+            add_text_to_log("Метод Эйлера модифицированный\nСреднее отклонение: ", 0);
+            add_text_to_log(delta.ToString(tochnost), 2);
+            return Points;
+        }
+        public IList<DataPoint> Dif_Runge_Kutta_4(IList<DataPoint> Points, Func<double, double, double> dY, Func<double, double> dY_solved, double y0, double x0, double xn, double step)
+        {
+            double xi, yi = y0, k0, k1, k2, k3, delta = 0;
+            Points = new List<DataPoint>();
+            for (xi = x0; xi <= xn + step / 2; xi += step)
+            {
+                delta += Math.Abs(yi - dY_solved(xi));
+                Points.Add(new DataPoint(xi, yi));
+                k0 = dY(xi, yi);
+                k1 = dY(xi + step / 2, yi + k0 * step / 2);
+                k2 = dY(xi + step / 2, yi + k1 * step / 2);
+                k3 = dY(xi + step, yi + k2 * step);
+                yi += (k0 + 2 * k1 + 2 * k2 + k3) * step / 6;
+            }
+            delta /= (xn - x0) / step;
+            add_text_to_log("Метод Рунге-Кутта 4\nСреднее отклонение: ", 0);
+            add_text_to_log(delta.ToString(tochnost), 2);
+            return Points;
+        }
+        public IList<DataPoint> Dif_Runge_Kutta_5(IList<DataPoint> Points, Func<double, double, double> dY, Func<double, double> dY_solved, double y0, double x0, double xn, double step)
+        {
+            double xi, yi = y0, k0, k1, k2, k3, k4, delta = 0;
+            Points = new List<DataPoint>();
+            for (xi = x0; xi <= xn + step / 2; xi += step)
+            {
+                delta += Math.Abs(yi - dY_solved(xi));
+                Points.Add(new DataPoint(xi, yi));
+                k0 = dY(xi, yi);
+                k1 = dY(xi + step / 3, yi + k0 * step / 3);
+                k2 = dY(xi + step / 3, yi + k0 * step / 6 + k1 * step / 6);
+                k3 = dY(xi + step / 2, yi + k0 * step / 8 + k2 * step * 3 / 8);
+                k4 = dY(xi + step,     yi + k0 * step / 2 - k2 * step * 3 / 2 + k3 * step * 2);
+                yi += (k0 + 4 * k3 + k4) * step / 6;
+            }
+            delta /= (xn - x0) / step;
+            add_text_to_log("Метод Рунге-Кутта 5\nСреднее отклонение: ", 0);
+            add_text_to_log(delta.ToString(tochnost), 2);
+            return Points;
+        }
+        public IList<DataPoint> Dif_Adams_Bashford_4(IList<DataPoint> Points, Func<double, double, double> dY, Func<double, double> dY_solved, double y0, double x0, double xn, double step)
+        {
+            double xi = x0, yi = y0, delta = 0, k0, k1, k2, k3, k4;
+            int i;
+            List<double> x = new List<double>() { 0, 0, 0, 0, 0 };
+            List<double> y = new List<double>() { 0, 0, 0, 0, 0 };
+            Points = new List<DataPoint>();
+
+            for (i = 0; i < 4; i ++)
+            {
+                delta += Math.Abs(yi - dY_solved(xi));
+                x[i] = xi;
+                y[i] = yi;
+                k0 = dY(xi, yi);
+                k1 = dY(xi + step / 3, yi + k0 * step / 3);
+                k2 = dY(xi + step / 3, yi + k0 * step / 6 + k1 * step / 6);
+                k3 = dY(xi + step / 2, yi + k0 * step / 8 + k2 * step * 3 / 8);
+                k4 = dY(xi + step, yi + k0 * step / 2 - k2 * step * 3 / 2 + k3 * step * 2);
+                yi += (k0 + 4 * k3 + k4) * step / 6;
+                xi += step;
+            }
+            y[4] = y[3];
+            x[4] = x[3];
+
+            while (x[4] < xn)
+            {
+                y[4] = y[3] + (55 * dY(x[3], y[3]) - 59 * dY(x[2], y[2]) + 37 * dY(x[1], y[1]) - 9 * dY(x[0], y[0])) * step / 24;
+                x[4] += step;
+
+                delta += Math.Abs(y[4] - dY_solved(x[4]));
+                Points.Add(new DataPoint(x[4], y[4]));
+
+                y[0] = y[1];
+                y[1] = y[2];
+                y[2] = y[3];
+                y[3] = y[4];
+
+                x[0] = x[1];
+                x[1] = x[2];
+                x[2] = x[3];
+                x[3] = x[4];
+            }
+            delta /= (xn - x0) / step;
+            add_text_to_log("Метод Адамса-Башфорта 4\nСреднее отклонение: ", 0);
+            add_text_to_log(delta.ToString(tochnost), 2);
+            return Points;
+        }
+        public IList<DataPoint> Dif_Adams_Moulton_4(IList<DataPoint> Points, Func<double, double, double> dY, Func<double, double> dY_solved, double y0, double x0, double xn, double step)
+        {
+            double xi = x0, yi = y0, delta = 0, k0, k1, k2, k3, k4;
+            int i;
+            List<double> x = new List<double>() { 0, 0, 0, 0, 0 };
+            List<double> y = new List<double>() { 0, 0, 0, 0, 0 };
+            Points = new List<DataPoint>();
+
+            for (i = 0; i < 4; i++)
+            {
+                delta += Math.Abs(yi - dY_solved(xi));
+                x[i] = xi;
+                y[i] = yi;
+
+                k0 = dY(xi, yi);
+                k1 = dY(xi + step / 3, yi + k0 * step / 3);
+                k2 = dY(xi + step / 3, yi + k0 * step / 6 + k1 * step / 6);
+                k3 = dY(xi + step / 2, yi + k0 * step / 8 + k2 * step * 3 / 8);
+                k4 = dY(xi + step, yi + k0 * step / 2 - k2 * step * 3 / 2 + k3 * step * 2);
+                yi += (k0 + 4 * k3 + k4) * step / 6;
+                xi += step;
+            }
+
+            y[4] = y[3];
+            x[4] = x[3];
+
+            while (x[4] < xn)
+            {
+                y[4] = y[3] + (55 * dY(x[3], y[3]) - 59 * dY(x[2], y[2]) + 37 * dY(x[1], y[1]) - 9 * dY(x[0], y[0])) * step / 24;
+
+                x[4] += step;
+
+                while (Math.Abs(y[4] - yi) > 0.0000000001)
                 {
-                    sumx += x[i];
-                    sumy += Math.Log(y[i]);
-                    sumx2 += x[i] * x[i];
-                    sumxy += x[i] * Math.Log(y[i]);
+                    y[4] = y[3] + (9 * dY(x[4], y[4]) + 19 * dY(x[3], y[3]) - 5 * dY(x[2], y[2]) + dY(x[1], y[1])) * step / 24;
+                    yi = y[i];
                 }
+
+                delta += Math.Abs(y[4] - dY_solved(x[4]));
+                Points.Add(new DataPoint(x[4], y[4]));
+
+                y[0] = y[1];
+                y[1] = y[2];
+                y[2] = y[3];
+                y[3] = y[4];
+
+                x[0] = x[1];
+                x[1] = x[2];
+                x[2] = x[3];
+                x[3] = x[4];
             }
-            b = (n * sumxy - (sumx * sumy)) / (n * sumx2 - sumx * sumx);
-            a = (sumy - b * sumx) / n;
-
-            add_text_to_log("Коэффициенты a, b:", 1);
-            add_text_to_log(a.ToString("F3"), 0);
-            add_text_to_log(b.ToString("F3"), 1);
-
-            for (xi = x[0]; xi < x[n - 1]; xi += 0.05)
-            {
-                Points.Add(new DataPoint(xi, Math.Exp(a + b * xi)));
-            }
-
-            double summa = 0, oshibka, delta;
-            for (int i = 0; i < n; i++)
-            {
-                delta = y[i] - Math.Exp(a + b * x[i]);
-                summa += Math.Pow(delta, 2);
-            }
-            oshibka = (summa / (n + 1));
-            add_text_to_log("Ошибка:", 1);
-            add_text_to_log(oshibka.ToString("F3"), 1);
-            add_text_to_log("", 1);
-
+            delta /= (xn - x0) / step;
+            add_text_to_log("Метод Адамса-Моултона 4\nСреднее отклонение: ", 0);
+            add_text_to_log(delta.ToString(tochnost), 2);
             return Points;
         }
     }
