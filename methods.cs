@@ -113,7 +113,7 @@ namespace WpfApplication1
 
             return result;
         }
-        public IList<DataPoint> Newton(IList<DataPoint> Points, List<double> x, List<double> y, double x0, double xn)
+        public IList<DataPoint> Newton(IList<DataPoint> Points, List<double> x, List<double> y, double x0, double xn, bool is_der)
         {
             int n = x.Count;
             double xi;
@@ -122,11 +122,25 @@ namespace WpfApplication1
             {
                 Points.Add(new DataPoint(xi, Get_Newton(xi, x, y, n)));
             }
-            for (int i = 1; i < n - 1; i++)  //находим производные для многочлена
+            if (is_der)
+                for (int i = 1; i < n - 1; i++)  //находим производные для многочлена
+                {
+                    log += Get_der_1(x[i]).ToString("F4");
+                    add_text_to_log("\t   ", 0);
+                    add_text_to_log(Get_der_2(x[i]).ToString("F4"), 1);
+                }
+
+            double Get_der_1(double xi)
             {
-                double der = (Get_Newton(x[i] + 0.0000001, x, y, n) - Get_Newton(x[i] - 0.0000001, x, y, n)) / 0.0000002;
-                add_text_to_log(der.ToString("F4"), 1);
+                double der = (Get_Newton(xi + 0.0000001, x, y, n) - Get_Newton(xi - 0.0000001, x, y, n)) / 0.0000002;
+                return der;
             }
+            double Get_der_2(double xi)
+            {
+                double der = (Get_der_1(xi + 0.0000001) - Get_der_1(xi - 0.0000001)) / 0.0000002;
+                return der;
+            }
+
             return Points;
         }
 
@@ -294,19 +308,12 @@ namespace WpfApplication1
             return S;
         }
 
-
-
-
-
-
-
-
         string tochnost = "F10";
         public IList<DataPoint> Dif_Real(IList<DataPoint> Points, Func<double, double> dY_solved, double y0, double x0, double xn)
         {
             double xi, step = 0.01;
             Points = new List<DataPoint>();
-            for (xi = x0; xi <= xn + step / 2; xi += step)
+            for (xi = x0; xi < xn + step / 2; xi += step)
             {
                 Points.Add(new DataPoint(xi, dY_solved(xi)));
             }
@@ -317,7 +324,7 @@ namespace WpfApplication1
         {
             double xi, yi = y0, delta = 0;
             Points = new List<DataPoint>();
-            for (xi = x0; xi <= xn + step / 2; xi += step)
+            for (xi = x0; xi < xn + step / 2; xi += step)
             {
                 delta += Math.Abs(yi - dY_solved(xi));
                 Points.Add(new DataPoint(xi, yi));
@@ -332,7 +339,7 @@ namespace WpfApplication1
         {
             double xi, yi = y0, delta = 0;
             Points = new List<DataPoint>();
-            for (xi = x0; xi <= xn + step / 2; xi += step)
+            for (xi = x0; xi < xn + step / 2; xi += step)
             {
                 delta += Math.Abs(yi - dY_solved(xi));
                 Points.Add(new DataPoint(xi, yi));
@@ -347,7 +354,7 @@ namespace WpfApplication1
         {
             double xi, yi = y0, k0, k1, k2, k3, delta = 0;
             Points = new List<DataPoint>();
-            for (xi = x0; xi <= xn + step / 2; xi += step)
+            for (xi = x0; xi < xn + step / 2; xi += step)
             {
                 delta += Math.Abs(yi - dY_solved(xi));
                 Points.Add(new DataPoint(xi, yi));
@@ -366,7 +373,7 @@ namespace WpfApplication1
         {
             double xi, yi = y0, k0, k1, k2, k3, k4, delta = 0;
             Points = new List<DataPoint>();
-            for (xi = x0; xi <= xn + step / 2; xi += step)
+            for (xi = x0; xi < xn + step / 2; xi += step)
             {
                 delta += Math.Abs(yi - dY_solved(xi));
                 Points.Add(new DataPoint(xi, yi));
@@ -406,7 +413,7 @@ namespace WpfApplication1
             y[4] = y[3];
             x[4] = x[3];
 
-            while (x[4] < xn)
+            while (x[4] < xn - step)
             {
                 y[4] = y[3] + (55 * dY(x[3], y[3]) - 59 * dY(x[2], y[2]) + 37 * dY(x[1], y[1]) - 9 * dY(x[0], y[0])) * step / 24;
                 x[4] += step;
@@ -455,16 +462,16 @@ namespace WpfApplication1
             y[4] = y[3];
             x[4] = x[3];
 
-            while (x[4] < xn)
+            while (x[4] < xn - step)
             {
                 y[4] = y[3] + (55 * dY(x[3], y[3]) - 59 * dY(x[2], y[2]) + 37 * dY(x[1], y[1]) - 9 * dY(x[0], y[0])) * step / 24;
 
                 x[4] += step;
 
-                while (Math.Abs(y[4] - yi) > 0.0000000001)
+                while (Math.Abs(y[4] - yi) > 0.000001)
                 {
                     y[4] = y[3] + (9 * dY(x[4], y[4]) + 19 * dY(x[3], y[3]) - 5 * dY(x[2], y[2]) + dY(x[1], y[1])) * step / 24;
-                    yi = y[i];
+                    yi = y[4];
                 }
 
                 delta += Math.Abs(y[4] - dY_solved(x[4]));

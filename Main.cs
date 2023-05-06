@@ -9,7 +9,7 @@ namespace WpfApplication1
 
     public class Main
     {
-        int exercise = 6;
+        int exercise = 1;
 
         methods metod = new methods();
 
@@ -29,7 +29,7 @@ namespace WpfApplication1
         public IList<DataPoint> Points7 { get; private set; }        public IList<DataPoint> Points8 { get; private set; }
 
         readonly static double a = 17, b = 4, k = 1;
-        readonly static int c = 4, d = 20, m = 16, n = 4;
+        readonly static int c = 4, d = 20, m = 6, n = 4;
 
         public static double Y3(double x)
         {
@@ -39,7 +39,7 @@ namespace WpfApplication1
         {
             return Math.Pow(-1, c) * (b+k/10)*y + (a+(double)d/100)*Math.Pow(x,2)+((double)m + (double)n /10);
         }
-        public static double dY5_solved(double x)
+        public static double dY5_solved(double x) // посчитано для m = 16
         {
             return (379005 * Math.Exp(4.1 * x) - 4 * (72283 * Math.Pow(x, 2) + 35260 * x + 77521)) / 68921;
         }
@@ -47,7 +47,7 @@ namespace WpfApplication1
         {
             return (2 * Math.Pow(y, 2) * Math.Log(x) - y) / x;
         }
-        public static double dY6_solved(double x)
+        public static double dY6_solved(double x) // посчитано для m = 16
         {
             return 1/(2.0*(Math.Log(x)+1));
         }
@@ -138,8 +138,24 @@ namespace WpfApplication1
                     tochki[i].Add(x);
                     znachenia[i].Add(Y3(x));
                     if (j != 0 && j < n) //если это не крайние точки, то ищем их производные
-                        Push_der(x);
+                    {
+                        metod.log += Get_der_1(x).ToString("F4");
+                        metod.log += "\t   ";
+                        metod.log += Get_der_2(x).ToString("F4");
+                        metod.log += "\n";
+                    }
                 }
+            }
+
+            double Get_der_1(double x) //находим производные для функции
+            {
+                double der = (Y3(x + 0.0000001) - Y3(x - 0.0000001)) / 0.0000002;
+                return der;
+            }
+            double Get_der_2(double x)
+            {
+                double der = (Get_der_1(x + 0.0000001) - Get_der_1(x - 0.0000001)) / 0.0000002;
+                return der;
             }
 
             void Push_der(double x) //находим производные для функции
@@ -153,12 +169,12 @@ namespace WpfApplication1
 
             Points1 = metod.tab(Points1, Xi, Yi);
             Points2 = metod.tab(Points2, Xiline, Yiline);
-            Points3 = metod.Newton(Points3, tochki[0], znachenia[0], Xi[0], Xi[1]);
-            Points4 = metod.Newton(Points4, tochki[1], znachenia[1], Xi[1], Xi[2]);
-            Points5 = metod.Newton(Points5, tochki[2], znachenia[2], Xi[2], Xi[3]);
-            Points6 = metod.Newton(Points6, tochki[3], znachenia[3], Xi[3], Xi[4]);
-            Points7 = metod.Newton(Points7, tochki[4], znachenia[4], Xi[4], Xi[5]);
-            Points8 = metod.Newton(Points8, tochki[5], znachenia[5], Xi[5], Xi[6]);
+            Points3 = metod.Newton(Points3, tochki[0], znachenia[0], Xi[0], Xi[1], true);
+            Points4 = metod.Newton(Points4, tochki[1], znachenia[1], Xi[1], Xi[2], true);
+            Points5 = metod.Newton(Points5, tochki[2], znachenia[2], Xi[2], Xi[3], true);
+            Points6 = metod.Newton(Points6, tochki[3], znachenia[3], Xi[3], Xi[4], true);
+            Points7 = metod.Newton(Points7, tochki[4], znachenia[4], Xi[4], Xi[5], true);
+            Points8 = metod.Newton(Points8, tochki[5], znachenia[5], Xi[5], Xi[6], true);
         }
 
         void ex3()
@@ -188,7 +204,7 @@ namespace WpfApplication1
                 }
             }
 
-            double step = 0.000001;
+            double step = 0.00001;
 
             metod.log += "Значение интеграла методом Ньютона-Котеса n = 3:\n";
             metod.log += "Число точек: "; metod.log += (m * 3).ToString(); metod.log += "\n";
@@ -253,7 +269,7 @@ namespace WpfApplication1
         }
         void ex6()
         {
-            double step = 0.05, x0 = 1, y0 = 0.5, xn = 5;
+            double step = 0.005, x0 = 1, y0 = 0.5, xn = 5;
             Points2 = metod.Dif_Real(Points2, dY6_solved, y0, x0, xn);
             Points3 = metod.Dif_Euler(Points3, dY6, dY6_solved, y0, x0, xn, step);
             Points4 = metod.Dif_Euler_Modify(Points4, dY6, dY6_solved, y0, x0, xn, step);
