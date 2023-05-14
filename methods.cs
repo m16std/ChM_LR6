@@ -1,16 +1,11 @@
 ﻿using OxyPlot;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.Intrinsics;
-using System.Text;
 
 namespace WpfApplication1
 {
     public class methods
     {
-
         public string log;
         private void add_text_to_log(string text, int endl)
         {

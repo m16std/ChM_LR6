@@ -3,9 +3,7 @@ namespace WpfApplication1
 {
     using System;
     using System.Collections.Generic;
-    using System.Windows.Controls;
     using OxyPlot;
-    using OxyPlot.Series;
 
     public class Main
     {
@@ -13,20 +11,24 @@ namespace WpfApplication1
 
         methods metod = new methods();
 
-        List<double> Xi = new List<double>(); //точки
+        List<double> Xi = new List<double>();                  //Точки
         List<double> Yi = new List<double>();
 
-        List<double> Xiline = new List<double>(); //график
+        List<double> Xiline = new List<double>();              //График
         List<double> Yiline = new List<double>();
 
-        List<List<double>> tochki = new List<List<double>>(m); //точки внутри отрезков
+        List<List<double>> tochki = new List<List<double>>(m); //Точки внутри отрезков
         List<List<double>> znachenia = new List<List<double>>(m);
 
         public string some_pice_of_shit;
-        public IList<DataPoint> Points1 { get; private set; }        public IList<DataPoint> Points2 { get; private set; }
-        public IList<DataPoint> Points3 { get; private set; }        public IList<DataPoint> Points4 { get; private set; }
-        public IList<DataPoint> Points5 { get; private set; }        public IList<DataPoint> Points6 { get; private set; }
-        public IList<DataPoint> Points7 { get; private set; }        public IList<DataPoint> Points8 { get; private set; }
+        public IList<DataPoint> Points1 { get; private set; }
+        public IList<DataPoint> Points2 { get; private set; }
+        public IList<DataPoint> Points3 { get; private set; }
+        public IList<DataPoint> Points4 { get; private set; }
+        public IList<DataPoint> Points5 { get; private set; }
+        public IList<DataPoint> Points6 { get; private set; }
+        public IList<DataPoint> Points7 { get; private set; }
+        public IList<DataPoint> Points8 { get; private set; }
 
         readonly static double a = 17, b = 4, k = 1;
         readonly static int c = 4, d = 20, m = 6, n = 4;
@@ -37,9 +39,9 @@ namespace WpfApplication1
         }
         public static double dY5(double x, double y)
         {
-            return Math.Pow(-1, c) * (b+k/10)*y + (a+(double)d/100)*Math.Pow(x,2)+((double)m + (double)n /10);
+            return Math.Pow(-1, c) * (b + k / 10) * y + (a + (double)d / 100) * Math.Pow(x, 2) + ((double)m + (double)n / 10);
         }
-        public static double dY5_solved(double x) // посчитано для m = 16
+        public static double dY5_solved(double x) // Посчитано для m = 16
         {
             return (379005 * Math.Exp(4.1 * x) - 4 * (72283 * Math.Pow(x, 2) + 35260 * x + 77521)) / 68921;
         }
@@ -47,9 +49,9 @@ namespace WpfApplication1
         {
             return (2 * Math.Pow(y, 2) * Math.Log(x) - y) / x;
         }
-        public static double dY6_solved(double x) // посчитано для m = 16
+        public static double dY6_solved(double x) // Посчитано для m = 16
         {
-            return 1/(2.0*(Math.Log(x)+1));
+            return 1 / (2.0 * (Math.Log(x) + 1));
         }
 
         void ex1()
@@ -110,7 +112,6 @@ namespace WpfApplication1
             Points7 = metod.Lagrange(Points7, tochki[4], znachenia[4], Xi[4], Xi[5], true);
             Points8 = metod.Lagrange(Points8, tochki[5], znachenia[5], Xi[5], Xi[6], true);
         }
-
         void ex2()
         {
             for (int i = 0; i <= m; i++) //добавляем точки
@@ -176,7 +177,6 @@ namespace WpfApplication1
             Points7 = metod.Newton(Points7, tochki[4], znachenia[4], Xi[4], Xi[5], true);
             Points8 = metod.Newton(Points8, tochki[5], znachenia[5], Xi[5], Xi[6], true);
         }
-
         void ex3()
         {
             for (int i = 0; i <= m; i++) //добавляем точки
@@ -213,7 +213,7 @@ namespace WpfApplication1
             metod.log += "Число точек: "; metod.log += (m * 6).ToString(); metod.log += "\n";
             metod.Newton_Cotes_6(Xi, Yi);
             metod.log += "\nЗначение интеграла методом левых прямоугольников:\n";
-            metod.log += "Число точек: "; metod.log += Math.Round((d - c)/ step).ToString(); metod.log += "\n";
+            metod.log += "Число точек: "; metod.log += Math.Round((d - c) / step).ToString(); metod.log += "\n";
             metod.Left_square(c, d, step);
             metod.log += "\nЗначение интеграла методом правых прямоугольников:\n";
             metod.log += "Число точек: "; metod.log += Math.Round((d - c) / step).ToString(); metod.log += "\n";
@@ -255,7 +255,6 @@ namespace WpfApplication1
             Points8 = metod.Lagrange(Points8, tochki[5], znachenia[5], Xi[5], Xi[6], false);
 
         }
-
         void ex5()
         {
             double step = 0.001, x0 = 0, y0 = 1, xn = 1;
@@ -279,7 +278,7 @@ namespace WpfApplication1
             Points8 = metod.Dif_Adams_Moulton_4(Points8, dY6, dY6_solved, y0, x0, xn, step);
         }
 
-            public Main()
+        public Main()
         {
             if (exercise == 1)
                 ex1();
